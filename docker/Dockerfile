@@ -22,7 +22,7 @@ RUN git config --global pull.ff only
 # Installs Emscripten.
 # See https://emscripten.org/docs/getting_started/downloads.html
 
-ENV EMSDK_VERSION 3.1.20
+ENV EMSDK_VERSION 3.1.30
 
 RUN git clone https://github.com/emscripten-core/emsdk.git /emsdk
 WORKDIR /emsdk
@@ -32,7 +32,7 @@ RUN ./emsdk activate $EMSDK_VERSION
 
 # Downloads and builds ZLIB.
 
-ENV ZLIB_VERSION 1.2.12
+ENV ZLIB_VERSION 1.2.13
 
 RUN wget --no-verbose https://zlib.net/zlib-$ZLIB_VERSION.tar.gz -O /zlib-$ZLIB_VERSION.tar.gz
 RUN tar -xf /zlib-$ZLIB_VERSION.tar.gz --directory /
@@ -61,6 +61,9 @@ ENV SWIPL_COMMIT b0896169e0c097bdea168937af36bc376f57252d
 WORKDIR /swipl-devel
 RUN git pull && git submodule update --init && \
     git checkout $SWIPL_COMMIT -b local-wasm
+
+RUN wget https://raw.githubusercontent.com/SWI-Prolog/swipl-devel/6a91ab6059b6c33d7a568f2dd8f1ee2f844d874b/cmake/EmscriptenTargets.cmake
+RUN cp ./EmscriptenTargets.cmake /swipl-devel/cmake/EmscriptenTargets.cmake
 
 # Compiles everything.
 
