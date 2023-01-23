@@ -74,14 +74,42 @@ describe("SWI-Prolog WebAssembly on Node.js", () => {
       assert.strictEqual(atom, "atom");
     });
 
-    it(`[${name}] ` + "should be able to preload files and generate images", async () => {
-      const swipl = await SWIPL({ 
-        arguments: ['-q', '-f', 'eye.pl'],
-        preRun: (Module) => Module.FS.writeFile('eye.pl', fs.readFileSync(path.join(__dirname, 'eye.pl'))) });
-      
-        swipl.prolog.query("main([\"--image\", \"eye.pvm\"])").once().X;
+    // if (name === 'bundle') {
+      it(`[${name}] ` + "should be able to preload files and generate images", async () => {
+        const eye = await eyePlString();
 
-      assert.strictEqual(Module.FS.readFile('eye.pvm').length > 500, true);
-    });
+        const Module = await SWIPL({ 
+          arguments: ['-q', '-f', 'eye.pl'],
+          preRun: (Module) => Module.FS.writeFile('eye.pl', eye) });
+        
+        queryOnce(Module, 'main', ['--image', 'eye.pvm']);
+
+        assert.strictEqual(Module.FS.readFile('eye.pvm').length > 500, true);
+      });
+    // }
   }
 });
+
+async function eyePlString() {
+  const res = (await fetch(`https://raw.githubusercontent.com/eyereasoner/eye/v2.3.6/eye.pl`));
+
+  if (res.status !== 200) {
+    throw new Error(`Error fetching eye.pl: ${await res.text()}`);
+  }
+
+  return res.text();
+}
+
+
+function query(Module, name, args) {
+  const queryString = `${name}(${
+    typeof args === 'string'
+      ? `"${args}"`
+      : `[${args.map((arg) => `'${arg}'`).join(', ')}]`
+  }).`;
+  return Module.prolog.query(queryString);
+}
+
+function queryOnce(Module, name, args) {
+  return query(Module, name, args).once();
+}
