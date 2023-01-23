@@ -1,4 +1,6 @@
 const assert = require("assert");
+const path = require("path");
+const fs = require('fs');
 // const SWIPL = require("../dist/swipl-node");
 
 describe("SWI-Prolog WebAssembly on Node.js", () => {
@@ -70,6 +72,16 @@ describe("SWI-Prolog WebAssembly on Node.js", () => {
       const swipl = await SWIPL({ arguments: ["-q"] });
       const atom = swipl.prolog.query("X = atom").once().X;
       assert.strictEqual(atom, "atom");
+    });
+
+    it(`[${name}] ` + "should be able to preload files and generate images", async () => {
+      const swipl = await SWIPL({ 
+        arguments: ['-q', '-f', 'eye.pl'],
+        preRun: (Module) => Module.FS.writeFile('eye.pl', fs.readFileSync(path.join(__dirname, 'eye.pl'))) });
+      
+        swipl.prolog.query("main([\"--image\", \"eye.pvm\"])").once().X;
+
+      assert.strictEqual(Module.FS.readFile('eye.pvm').length > 500, true);
     });
   }
 });
