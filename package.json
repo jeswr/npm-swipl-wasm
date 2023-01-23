@@ -41,7 +41,8 @@
     "test": "run-s test:node test:browser",
     "lint:types": "eslint dist --ext .ts",
     "lint:tests": "eslint tests --ext .js",
-    "lint": "run-s lint:types lint:tests"
+    "lint": "run-s lint:types lint:tests",
+    "serve": "cp -r ./dist/swipl/ ./tests/wasm && http-server tests"
   },
   "peerDependencies": {
     "@types/emscripten": "^1.39.6"
